@@ -76,10 +76,11 @@ class Driver: NSObject {
         if let context = context {
             var results: [AnyObject]? = nil
             var request = NSFetchRequest(entityName: entityName)
-            if predicate != nil {
+            if let predicate = predicate {
                 request.predicate = predicate
             }
-            if sortDescriptors != nil {
+            
+            if let sortDescriptors = sortDescriptors {
                 request.sortDescriptors = sortDescriptors
             }
             if let offset = offset {
