@@ -171,7 +171,7 @@ public extension NSManagedObject {
     */
     public class func find(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [NSManagedObject]? {
         var error: NSError? = nil
-        return ActiveRecord.driver?.read(entityName, predicate: predicate, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error)
+        return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error)
     }
     
     /**
