@@ -157,6 +157,17 @@ public extension NSManagedObject {
     public func delete() {
         ActiveRecord.driver?.delete(object: self)
     }
+
+    /**
+    Delete all managed objects using predicate
+
+    :param: entityName
+    :param: predicate
+    */
+    public func delete(#entityName: String, predicate: NSPredicate) {
+        var error: NSError? = nil
+        ActiveRecord.driver?.delete(entityName: entityName, predicate: predicate, context: ActiveRecord.driver?.context(), error: &error)
+    }
     
     /**
     Find managed objects
