@@ -164,7 +164,7 @@ public extension NSManagedObject {
     :param: entityName
     :param: predicate
     */
-    public func delete(#entityName: String, predicate: NSPredicate) {
+    public class func delete(#entityName: String, predicate: NSPredicate) {
         var error: NSError? = nil
         ActiveRecord.driver?.delete(entityName: entityName, predicate: predicate, context: ActiveRecord.driver?.context(), error: &error)
     }
