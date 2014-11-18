@@ -76,10 +76,11 @@ class Driver: NSObject {
         if let context = context {
             var results: [AnyObject]? = nil
             var request = NSFetchRequest(entityName: entityName)
-            if predicate != nil {
+            if let predicate = predicate {
                 request.predicate = predicate
             }
-            if sortDescriptors != nil {
+            
+            if let sortDescriptors = sortDescriptors {
                 request.sortDescriptors = sortDescriptors
             }
             if let offset = offset {
@@ -235,13 +236,17 @@ class Driver: NSObject {
     :param: predicate
     :param: context
     :param: error
+
+    :returns: true if success
     */
-    func delete(#entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext, error: NSErrorPointer) {
+    func delete(#entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext? = nil, error: NSErrorPointer) -> Bool {
         if let objects = read(entityName, predicate: predicate, context: context, error: error) {
             for object: NSManagedObject in objects {
                 delete(object: object)
             }
+            return true
         }
+        return false
     }
     
     /**

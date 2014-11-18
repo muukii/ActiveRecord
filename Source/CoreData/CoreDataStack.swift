@@ -68,7 +68,7 @@ public class CoreDataStack: NSObject {
 
         if let storeURL = self.storeURL {
             // find the persistent store.
-            if storeURL.checkResourceIsReachableAndReturnError(&error) {
+            if storeURL.checkResourceIsReachableAndReturnError(&error) == false {
                 println("Persistent store not found : \(error?.localizedDescription)")
                 return false
             }
@@ -77,7 +77,7 @@ public class CoreDataStack: NSObject {
             let sourceMetaData = NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(NSSQLiteStoreType, URL: storeURL, error: &error)
             if let managedObjectModel = self.managedObjectModel {
                 let isCompatible: Bool = managedObjectModel.isConfiguration(nil, compatibleWithStoreMetadata: sourceMetaData)
-                return isCompatible
+                return !isCompatible
             } else {
                 fatalError("Could not get managed object model")
             }
