@@ -17,45 +17,31 @@ public class CoreDataStack: NSObject {
 
     /// Main queue context
     public var defaultManagedObjectContext: NSManagedObjectContext? {
-        get {
-            assert(false, "must implement property defaultManagedObjectContext")
-            return nil
-        }
-        set {}
+        assert(false, "must implement property defaultManagedObjectContext")
+        return nil
     }
 
     /// Context for writing to the PersistentStore
     public var writerManagedObjectContext: NSManagedObjectContext? {
-        get {
-            assert(false, "must implement property writerManagedObjectContext")
-            return nil
-        }
-        set {}
+        assert(false, "must implement property writerManagedObjectContext")
+        return nil
     }
     
     /// PersistentStoreCoordinator
     public var persistentStoreCoordinator: NSPersistentStoreCoordinator? {
-        get {
-            assert(false, "must implement property persistentStoreCoordinator")
-            return nil
-        }
+        assert(false, "must implement property persistentStoreCoordinator")
+        return nil
     }
     
     /// ManagedObjectModel
     public var managedObjectModel: NSManagedObjectModel? {
-        get {
-            assert(false, "must implement property managedObjectModel")
-            return nil
-        }
-        set {}
+        assert(false, "must implement property managedObjectModel")
+        return nil
     }
 
     /// Store URL
     public var storeURL: NSURL? {
-        get {
-            return nil
-        }
-        set {}
+        return nil
     }
     
     /**
