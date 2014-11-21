@@ -25,25 +25,17 @@ import CoreData
 
 public class ActiveRecord: NSObject {
     
-    /// private sharedInstance
-    private class var sharedInstance : ActiveRecord {
-        struct Static {
-            static let instance : ActiveRecord = ActiveRecord()
-        }
-        return Static.instance
+    struct Static {
+        static var driver: Driver?
     }
     
-    /// instance variable for static variable driver
-    private var sharedDriver: Driver?
-
+    
     private class var driver: Driver? {
-        return ActiveRecord.sharedInstance.sharedDriver
+        return Static.driver
     }
     
-    override init() {
-        if let coreDataStack = ActiveRecordConfig.sharedInstance.coreDataStack {
-            self.sharedDriver = Driver(coreDataStack: coreDataStack)
-        }
+    public class func setup(#coreDataStack: CoreDataStack) {
+        Static.driver = Driver(coreDataStack: coreDataStack)
     }
     
     /**
@@ -109,6 +101,18 @@ public class ActiveRecord: NSObject {
         if let driver = self.driver {
             return driver.performBlock(block: block, completion: nil, waitUntilFinished: true)
         }
+    }
+    
+    /**
+    Check if migration is needed.
+    
+    :returns: true if migration is needed. false if not needed (includes case when persistent store is not found).
+    */
+    public class func isRequiredMigration() -> Bool {
+        if let driver = self.driver {
+            return driver.isRequiredMigration()
+        }
+        return false
     }
 
 }

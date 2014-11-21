@@ -404,6 +404,16 @@ class Driver: NSObject {
     func mainContext() -> NSManagedObjectContext? {
         return self.coreDataStack.defaultManagedObjectContext
     }
+    
+    
+    /**
+    Check if migration is needed.
+    
+    :returns: true if migration is needed. false if not needed (includes case when persistent store is not found).
+    */
+    func isRequiredMigration() -> Bool {
+        return self.coreDataStack.isRequiredMigration()
+    }
 }
     
 
