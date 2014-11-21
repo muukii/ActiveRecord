@@ -36,12 +36,18 @@ class Driver: NSObject {
     }
 
     var coreDataStack : CoreDataStack
-    
-    lazy var driverOperationQueue: DriverOperationQueue = {
+
+    private var _driverOperationQueue: DriverOperationQueue? = nil
+    var driverOperationQueue: DriverOperationQueue {
+        if let queue = _driverOperationQueue {
+            return queue
+        }
+        
         let queue = DriverOperationQueue(parentContext: self.coreDataStack.defaultManagedObjectContext)
+        _driverOperationQueue = queue
         queue.maxConcurrentOperationCount = Static.maxConcurrentOperationCount
         return queue
-    }()
+    }
     
     init(coreDataStack: CoreDataStack) {
         self.coreDataStack = coreDataStack
