@@ -30,19 +30,22 @@ import CoreData
 
 
 class Driver: NSObject {
+    
+    struct Static {
+        static let maxConcurrentOperationCount = 1
+    }
 
     var coreDataStack : CoreDataStack
     
-    let kMaxConcurrentOperationCount = 1
-    var driverOperationQueue: DriverOperationQueue
+    lazy var driverOperationQueue: DriverOperationQueue = {
+        let queue = DriverOperationQueue(parentContext: self.coreDataStack.defaultManagedObjectContext)
+        queue.maxConcurrentOperationCount = Static.maxConcurrentOperationCount
+        return queue
+    }()
     
     init(coreDataStack: CoreDataStack) {
         self.coreDataStack = coreDataStack
-        self.driverOperationQueue = DriverOperationQueue(parentContext: coreDataStack.defaultManagedObjectContext)
-        self.driverOperationQueue.maxConcurrentOperationCount = kMaxConcurrentOperationCount
     }
-    
-    
     
     // MARK: - CRUD
     

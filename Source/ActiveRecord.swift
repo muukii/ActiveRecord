@@ -38,6 +38,13 @@ public class ActiveRecord: NSObject {
         Static.driver = Driver(coreDataStack: coreDataStack)
     }
     
+    public class func persistentStoreCoordinator() -> NSPersistentStoreCoordinator? {
+        if let driver = self.driver {
+            return driver.coreDataStack.persistentStoreCoordinator
+        }
+        return nil
+    }
+    
     /**
     Peform block in background queue and save
     
