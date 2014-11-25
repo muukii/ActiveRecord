@@ -15,6 +15,10 @@ public class CoreDataStack: NSObject {
         super.init()
     }
 
+    
+    /// true if migration was not necessary on launch or have performed migration
+    var migrationNotRequiredConfirmed: Bool = false
+    
     /// Main queue context
     public var defaultManagedObjectContext: NSManagedObjectContext? {
         assert(false, "must implement property defaultManagedObjectContext")
@@ -43,6 +47,14 @@ public class CoreDataStack: NSObject {
     public var storeURL: NSURL? {
         return nil
     }
+
+    /**
+    Instantiates the stack (defaultManagedObjectContext, writerManagedObjectContext, persistentStoreCoordinator, managedObjectModel). Typically this will trigger migration when needed.
+    */
+    func instantiateStack() {
+        self.defaultManagedObjectContext
+        self.migrationNotRequiredConfirmed = true
+    }
     
     /**
     Check if migration is needed.
@@ -63,6 +75,9 @@ public class CoreDataStack: NSObject {
             let sourceMetaData = NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(NSSQLiteStoreType, URL: storeURL, error: &error)
             if let managedObjectModel = self.managedObjectModel {
                 let isCompatible: Bool = managedObjectModel.isConfiguration(nil, compatibleWithStoreMetadata: sourceMetaData)
+                if isCompatible {
+                    self.migrationNotRequiredConfirmed = true
+                }
                 return !isCompatible
             } else {
                 fatalError("Could not get managed object model")

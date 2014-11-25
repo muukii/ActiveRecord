@@ -34,6 +34,14 @@ public class ActiveRecord: NSObject {
         return Static.driver
     }
     
+    /// true if migration was not necessary on launch or have performed migration
+    public class var migrationNotRequiredConfirmed: Bool {
+        if let driver = Static.driver {
+            return driver.coreDataStack.migrationNotRequiredConfirmed
+        }
+        return false
+    }
+    
     public class func setup(#coreDataStack: CoreDataStack) {
         Static.driver = Driver(coreDataStack: coreDataStack)
     }
@@ -111,17 +119,30 @@ public class ActiveRecord: NSObject {
     }
     
     /**
-    Check if migration is needed.
+    Check if migration is needed. instantiateCoreDataStack() will be called internally if migration is not needed.
     
     :returns: true if migration is needed. false if not needed (includes case when persistent store is not found).
     */
     public class func isRequiredMigration() -> Bool {
         if let driver = self.driver {
-            return driver.isRequiredMigration()
+            let required = driver.isRequiredMigration()
+            if !required {
+                self.instantiateCoreDataStack()
+            }
+            return required
         }
         return false
     }
-
+    
+    
+    /**
+    Instantiates the Core Data Stack (defaultManagedObjectContext, writerManagedObjectContext, persistentStoreCoordinator, managedObjectModel). This will trigger migration when needed.
+    */
+    public class func instantiateCoreDataStack() {
+        if let driver = self.driver {
+            driver.coreDataStack.instantiateStack()
+        }
+    }
 }
 
 
