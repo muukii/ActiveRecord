@@ -165,11 +165,11 @@ class Driver: NSObject {
             parentContext.performBlock({ () -> Void in
                 if parentContext.save(error) {
                     if parentContext == self.coreDataStack.writerManagedObjectContext {
-                        println("Data stored")
+                        arprint("Data stored")
                     } else if parentContext == self.coreDataStack.defaultManagedObjectContext {
-                        println("MainQueueContext saved")
+                        arprint("MainQueueContext saved")
                     } else {
-                        println("Recursive save \(parentContext)")
+                        arprint("Recursive save \(parentContext)")
                     }
                     
                     self.recursiveSave(parentContext, error: error)
@@ -200,18 +200,18 @@ class Driver: NSObject {
                     }
                 })
                 if error.memory != nil {
-                    println("Save failed : \(error.memory?.localizedDescription)")
+                    arprint("Save failed : \(error.memory?.localizedDescription)")
                     return false
                 } else {
-                    println("Save Success")
+                    arprint("Save Success")
                     return true
                 }
             } else {
-                println("Save Success (No changes)")
+                arprint("Save Success (No changes)")
                 return true
             }
         } else {
-            println("Save failed : context is nil")
+            arprint("Save failed : context is nil")
             return false
         }
     }
@@ -455,7 +455,7 @@ class DriverOperationQueue: NSOperationQueue {
     :param: op Operation
     */
     override func addOperation(op: NSOperation) {
-        println("Add Operation")
+        arprint("Add Operation")
         if let lastOperation = self.operations.last as? NSOperation {
             op.addDependency(lastOperation)
         }

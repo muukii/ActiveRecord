@@ -23,6 +23,16 @@
 import Foundation
 import CoreData
 
+func arprint(  _ body: AnyObject! = "",
+    function: String = __FUNCTION__,
+    line: Int = __LINE__) {
+#if DEBUG
+    println("[\(function) : \(line)] \(body)")
+    #else
+#endif
+}
+
+
 public class ActiveRecord: NSObject {
     
     struct Static {
