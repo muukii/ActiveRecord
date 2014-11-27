@@ -162,28 +162,19 @@ class Driver: NSObject {
     */
     private func recursiveSave(context: NSManagedObjectContext?, error: NSErrorPointer) {
         if let parentContext = context?.parentContext {
-            if (parentContext == self.coreDataStack.writerManagedObjectContext) {
-                parentContext.performBlock({ () -> Void in
-                    if parentContext.save(error) {
-                        if parentContext == self.coreDataStack.writerManagedObjectContext {
-                            println("Data stored")
-                        }
-                        self.recursiveSave(parentContext, error: error)
+            parentContext.performBlock({ () -> Void in
+                if parentContext.save(error) {
+                    if parentContext == self.coreDataStack.writerManagedObjectContext {
+                        println("Data stored")
+                    } else if parentContext == self.coreDataStack.defaultManagedObjectContext {
+                        println("MainQueueContext saved")
+                    } else {
+                        println("Recursive save \(parentContext)")
                     }
-                })
-            } else {
-                parentContext.performBlockAndWait({ () -> Void in
-                    if parentContext.save(error) {
-                        if parentContext == self.coreDataStack.defaultManagedObjectContext {
-                            println("Merge to MainQueueContext")
-                        } else {
-                            println("Recursive save \(parentContext)")
-                        }
-                        
-                        self.recursiveSave(parentContext, error: error)
-                    }
-                })
-            }
+                    
+                    self.recursiveSave(parentContext, error: error)
+                }
+            })
         }
     }
     
