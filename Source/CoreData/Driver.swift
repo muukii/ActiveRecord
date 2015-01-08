@@ -53,6 +53,11 @@ class Driver: NSObject {
         self.coreDataStack = coreDataStack
     }
     
+    func tearDown(tearDownCoreDataStack: (CoreDataStack) -> Void) {
+        _driverOperationQueue = nil
+        tearDownCoreDataStack(self.coreDataStack)
+    }
+    
     // MARK: - CRUD
     
     /**

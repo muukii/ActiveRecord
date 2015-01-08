@@ -56,6 +56,11 @@ public class ActiveRecord: NSObject {
         Static.driver = Driver(coreDataStack: coreDataStack)
     }
     
+    public class func tearDown(tearDownCoreDataStack: (CoreDataStack) -> Void) {
+        Static.driver?.tearDown(tearDownCoreDataStack)
+        Static.driver = nil
+    }
+    
     public class func persistentStoreCoordinator() -> NSPersistentStoreCoordinator? {
         if let driver = self.driver {
             return driver.coreDataStack.persistentStoreCoordinator
