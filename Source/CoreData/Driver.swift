@@ -314,6 +314,11 @@ class Driver: NSObject {
                                     saveSuccess?()
                                     return
                                 })
+                            } else {
+                                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                                    saveFailure?(error: error)
+                                    return
+                                })
                             }
                         }
                     } else {
