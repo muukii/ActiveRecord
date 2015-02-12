@@ -107,7 +107,7 @@ class Driver: NSObject {
                     request.fetchLimit = limit
                 }
             }
-            return context.executeFetchRequest(request, error: error) as [NSManagedObject]?
+            return context.executeFetchRequest(request, error: error) as! [NSManagedObject]?
         } else {
             return nil
         }
@@ -127,7 +127,7 @@ class Driver: NSObject {
         var results: [AnyObject]? = nil
 
         if let ctx = ctx {
-            return ctx.executeFetchRequest(fetchRequest, error: error) as [NSManagedObject]?
+            return ctx.executeFetchRequest(fetchRequest, error: error) as! [NSManagedObject]?
         }
         return nil
     }
@@ -302,7 +302,7 @@ class Driver: NSObject {
                 var localContext = self.driverOperationQueue.context
                 block(save: { () -> Void in
                     var error: NSError? = nil
-                    if localContext.obtainPermanentIDsForObjects(localContext.insertedObjects.allObjects, error: &error) {
+                    if localContext.obtainPermanentIDsForObjects(Array(arrayLiteral: localContext.insertedObjects), error: &error) {
                         if error != nil {
                             dispatch_sync(dispatch_get_main_queue(), { () -> Void in
                                 saveFailure?(error: error)

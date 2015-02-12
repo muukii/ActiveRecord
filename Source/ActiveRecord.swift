@@ -170,8 +170,8 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func create(#entityName: String) -> NSManagedObject? {
-        return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context())
+    public class func create<T: NSManagedObject>(#entityName: String) -> T? {
+        return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context()) as? T
     }
     
     /**
@@ -181,10 +181,10 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func createAsTemporary(#entityName: String) -> NSManagedObject? {
+    public class func createAsTemporary<T: NSManagedObject>(#entityName: String) -> T? {
         if let context = NSManagedObjectContext.context() {
             if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
-                return self(entity: entityDescription, insertIntoManagedObjectContext: nil)
+                return self(entity: entityDescription, insertIntoManagedObjectContext: nil) as? T
             }
         }
         return nil
@@ -227,9 +227,9 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func find(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [NSManagedObject]? {
+    public class func find<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [T]? {
         var error: NSError? = nil
-        return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error)
+        return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error) as? [T]
     }
     
     /**
@@ -241,10 +241,10 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func findFirst(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> NSManagedObject? {
+    public class func findFirst<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> T? {
         var error: NSError? = nil
         if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
-            return objects.first
+            return objects.first as? T
         }
         return nil
     }
@@ -256,9 +256,9 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func find(#fetchRequest: NSFetchRequest) -> [NSManagedObject]? {
+    public class func find<T: NSManagedObject>(#fetchRequest: NSFetchRequest) -> [T]? {
         var error: NSError? = nil
-        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error)
+        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error) as? [T]
     }
     
     /**
