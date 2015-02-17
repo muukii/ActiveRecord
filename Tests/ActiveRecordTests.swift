@@ -54,7 +54,7 @@ class ActiveRecordTests: XCTestCase {
         }
 
         // read
-        var fetchedEvent = Event.findFirst(entityName: eventEntityName) as? Event
+        var fetchedEvent = Event.findFirst(entityName: eventEntityName)
         XCTAssertNotNil(fetchedEvent, "should find created event")
         if let fetchedEvent = fetchedEvent {
             XCTAssertEqual(fetchedEvent.title, "eat", "title should be eat")
@@ -79,7 +79,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // find with predicate
-        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "play")) as? Event
+        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "play"))
         XCTAssertNotNil(fetchedEvent, "should find created event")
         if let fetchedEvent = fetchedEvent {
             XCTAssertEqual(fetchedEvent.title, "play", "title should be play")
@@ -87,7 +87,7 @@ class ActiveRecordTests: XCTestCase {
         
         // find with predicate and sortDescriptor
         let sortDescriptors: [NSSortDescriptor] = [NSSortDescriptor(key: "title", ascending: false)]
-        fetchedEvent = Event.findFirst(entityName: eventEntityName, sortDescriptors:sortDescriptors) as? Event
+        fetchedEvent = Event.findFirst(entityName: eventEntityName, sortDescriptors:sortDescriptors)
         if let fetchedEvent = fetchedEvent {
             XCTAssertEqual(fetchedEvent.title, "sleep", "title should be sleep")
         }
@@ -99,7 +99,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // find updated
-        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "work")) as? Event
+        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "work"))
         XCTAssertNotNil(fetchedEvent, "should find updated event")
         if let fetchedEvent = fetchedEvent {
             XCTAssertEqual(fetchedEvent.title, "work", "title should be work")
@@ -111,7 +111,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // cannot find deleted
-        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "work")) as? Event
+        fetchedEvent = Event.findFirst(entityName: eventEntityName, predicate: NSPredicate(format: "SELF.title = %@", "work"))
         XCTAssertNil(fetchedEvent, "should not find deleted event")
     }
     

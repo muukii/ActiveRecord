@@ -239,15 +239,6 @@ public extension NSManagedObject {
         var error: NSError? = nil
         return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error) as? [T]
     }
-    /*
-    public class func find(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> Array<Self>? {
-    func _find<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [T]? {
-    var error: NSError? = nil
-    return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error) as? [T]
-    }
-    return _find(entityName: entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit)
-    }
-*/
     
     /**
     Find first managed object
@@ -258,12 +249,17 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func findFirst<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> T? {
-        var error: NSError? = nil
-        if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
-            return objects.first as? T
+    public class func findFirst(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> Self? {
+        
+        func _findFirst<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> T? {
+            var error: NSError? = nil
+            if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
+                return objects.first as? T
+            }
+            return nil
         }
-        return nil
+        
+        return _findFirst(entityName: entityName, predicate: predicate, sortDescriptors: sortDescriptors)
     }
     
     /**
@@ -273,10 +269,10 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-//    public class func find<T: NSManagedObject>(#fetchRequest: NSFetchRequest) -> [T]? {
-//        var error: NSError? = nil
-//        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error) as? [T]
-//    }
+    public class func find(#fetchRequest: NSFetchRequest) -> [NSManagedObject]? {
+        var error: NSError? = nil
+        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error)
+    }
     
     /**
     Count managed objects
