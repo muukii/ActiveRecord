@@ -51,7 +51,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
                 for i in 0...5 {
                     let entity = self.fetchedResultsController.fetchRequest.entity
-                    var newEvent = Event.create(entityName: entity!.name!) as? Event
+                    var newEvent = Event.create(entityName: entity!.name!)
                     
                     newEvent!.timeStamp = NSDate()
                     event = newEvent
@@ -174,19 +174,19 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        switch type {
-            case .Insert:
-                tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
-            case .Delete:
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-            case .Update:
-                self.configureCell(tableView.cellForRowAtIndexPath(indexPath)!, atIndexPath: indexPath)
-            case .Move:
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
-            default:
-                return
-        }
+//        switch type {
+//            case .Insert:
+//                tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
+//            case .Delete:
+//                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+//            case .Update:
+//                self.configureCell(tableView.cellForRowAtIndexPath(indexPath)!, atIndexPath: indexPath)
+//            case .Move:
+//                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+//                tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
+//            default:
+//                return
+//        }
     }
 
     func controllerDidChangeContent(controller: NSFetchedResultsController) {

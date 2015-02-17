@@ -45,7 +45,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // create
-        var newEvent = Event.create(entityName: eventEntityName) as? Event
+        var newEvent = Event.create(entityName: eventEntityName)
         XCTAssertNotNil(newEvent, "create does not fail")
         if let event = newEvent {
             event.title = "eat"
@@ -61,7 +61,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // create
-        newEvent = Event.create(entityName: eventEntityName) as? Event
+        newEvent = Event.create(entityName: eventEntityName)
         XCTAssertNotNil(newEvent, "create does not fail")
         if let event = newEvent {
             event.title = "sleep"
@@ -70,7 +70,7 @@ class ActiveRecordTests: XCTestCase {
         }
         
         // create
-        newEvent = Event.create(entityName: eventEntityName) as? Event
+        newEvent = Event.create(entityName: eventEntityName)
         XCTAssertNotNil(newEvent, "create does not fail")
         if let event = newEvent {
             event.title = "play"

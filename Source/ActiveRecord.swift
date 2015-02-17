@@ -170,8 +170,12 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func create<T: NSManagedObject>(#entityName: String) -> T? {
-        return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context()) as? T
+    
+    public class func create(#entityName: String) -> Self? {
+        func _create<T where T: NSManagedObject>(#entityName: String) -> T? {
+            return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context()) as? T
+        }
+        return _create(entityName: entityName)
     }
     
     /**
@@ -181,14 +185,18 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func createAsTemporary<T: NSManagedObject>(#entityName: String) -> T? {
-        if let context = NSManagedObjectContext.context() {
-            if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
-                return self(entity: entityDescription, insertIntoManagedObjectContext: nil) as? T
+    public class func createAsTemporary(#entityName: String) -> Self? {
+        func _createAsTemporary<T: NSManagedObject>(#entityName: String) -> T? {
+            if let context = NSManagedObjectContext.context() {
+                if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
+                    return NSManagedObject(entity: entityDescription, insertIntoManagedObjectContext: nil) as? T
+                }
             }
+            return nil
         }
-        return nil
+        return _createAsTemporary(entityName: entityName)
     }
+    
     
     /**
     Save the managed object context which this managed object lives in.
@@ -231,6 +239,15 @@ public extension NSManagedObject {
         var error: NSError? = nil
         return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error) as? [T]
     }
+    /*
+    public class func find(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> Array<Self>? {
+    func _find<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [T]? {
+    var error: NSError? = nil
+    return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error) as? [T]
+    }
+    return _find(entityName: entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit)
+    }
+*/
     
     /**
     Find first managed object
@@ -256,10 +273,10 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func find<T: NSManagedObject>(#fetchRequest: NSFetchRequest) -> [T]? {
-        var error: NSError? = nil
-        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error) as? [T]
-    }
+//    public class func find<T: NSManagedObject>(#fetchRequest: NSFetchRequest) -> [T]? {
+//        var error: NSError? = nil
+//        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error) as? [T]
+//    }
     
     /**
     Count managed objects
