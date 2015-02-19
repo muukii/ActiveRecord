@@ -33,18 +33,18 @@ class Driver: NSObject {
     
     struct Static {
         static let maxConcurrentOperationCount = 1
+        static var driverOperationQueue: DriverOperationQueue?
     }
 
     var coreDataStack : CoreDataStack
 
-    private var _driverOperationQueue: DriverOperationQueue? = nil
     var driverOperationQueue: DriverOperationQueue {
-        if let queue = _driverOperationQueue {
+        if let queue = Static.driverOperationQueue {
             return queue
         }
         
         let queue = DriverOperationQueue(parentContext: self.coreDataStack.defaultManagedObjectContext)
-        _driverOperationQueue = queue
+        Static.driverOperationQueue = queue
         queue.maxConcurrentOperationCount = Static.maxConcurrentOperationCount
         return queue
     }
@@ -54,7 +54,7 @@ class Driver: NSObject {
     }
     
     func tearDown(tearDownCoreDataStack: (CoreDataStack) -> Void) {
-        _driverOperationQueue = nil
+        Static.driverOperationQueue = nil
         tearDownCoreDataStack(self.coreDataStack)
     }
     
