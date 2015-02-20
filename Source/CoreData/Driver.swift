@@ -43,9 +43,9 @@ class Driver: NSObject {
             return queue
         }
         
-        let queue = DriverOperationQueue(parentContext: self.coreDataStack.defaultManagedObjectContext)
-        Static.driverOperationQueue = queue
+        let queue = DriverOperationQueue()
         queue.maxConcurrentOperationCount = Static.maxConcurrentOperationCount
+        Static.driverOperationQueue = queue
         return queue
     }
     
@@ -298,43 +298,46 @@ class Driver: NSObject {
     */
     func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool = false) {
         if let block = block {
-            let operation = DriverOperation { () -> Void in
-                var localContext = self.driverOperationQueue.context
-                block(save: { () -> Void in
-                    var error: NSError? = nil
-                    if localContext.obtainPermanentIDsForObjects(localContext.insertedObjects.allObjects, error: &error) {
-                        if error != nil {
-                            dispatch_sync(dispatch_get_main_queue(), { () -> Void in
-                                saveFailure?(error: error)
-                                return
-                            })
-                        } else {
-                            if self.save(localContext, error: &error) {
+
+            if let context = self.coreDataStack.defaultManagedObjectContext {
+                let operation = DriverOperation(parentContext: context) { (localContext) -> Void in
+                    block(save: { () -> Void in
+                        var error: NSError? = nil
+                        if localContext.obtainPermanentIDsForObjects(localContext.insertedObjects.allObjects, error: &error) {
+                            if error != nil {
                                 dispatch_sync(dispatch_get_main_queue(), { () -> Void in
-                                    saveSuccess?()
-                                    return
-                                })
-                            } else {
-                                dispatch_async(dispatch_get_main_queue(), { () -> Void in
                                     saveFailure?(error: error)
                                     return
                                 })
+                            } else {
+                                if self.save(localContext, error: &error) {
+                                    dispatch_sync(dispatch_get_main_queue(), { () -> Void in
+                                        saveSuccess?()
+                                        return
+                                    })
+                                } else {
+                                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                                        saveFailure?(error: error)
+                                        return
+                                    })
+                                }
                             }
+                        } else {
+                            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                                saveFailure?(error: error)
+                                return
+                            })
                         }
-                    } else {
-                        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                            saveFailure?(error: error)
-                            return
-                        })
-                    }
-                })
-                return
-            }
-            
-            if waitUntilFinished {
-                self.driverOperationQueue.addOperations([operation], waitUntilFinished: true)
-            } else {
-                self.driverOperationQueue.addOperation(operation)
+                    })
+                    return
+                }
+                
+                if waitUntilFinished {
+                    self.driverOperationQueue.addOperations([operation], waitUntilFinished: true)
+                } else {
+                    self.driverOperationQueue.addOperation(operation)
+                }
+                
             }
         }
     }
@@ -347,20 +350,22 @@ class Driver: NSObject {
     */
     func performBlock(#block: (() -> Void)?, completion: (() -> Void)?, waitUntilFinished: Bool = false) {
         if let block = block {
-            let operation = DriverOperation { () -> Void in
-                block()
-                if let completion = completion {
-                    dispatch_sync(dispatch_get_main_queue(), { () -> Void in
-                        completion()
-                    })
+            if let context = self.coreDataStack.defaultManagedObjectContext {
+                let operation = DriverOperation(parentContext: context) { (localContext) -> Void in
+                    block()
+                    if let completion = completion {
+                        dispatch_sync(dispatch_get_main_queue(), { () -> Void in
+                            completion()
+                        })
+                    }
+                    return
                 }
-                return
-            }
-            
-            if waitUntilFinished {
-                self.driverOperationQueue.addOperations([operation], waitUntilFinished: true)
-            } else {
-                self.driverOperationQueue.addOperation(operation)
+                
+                if waitUntilFinished {
+                    self.driverOperationQueue.addOperations([operation], waitUntilFinished: true)
+                } else {
+                    self.driverOperationQueue.addOperation(operation)
+                }
             }
         }
     }
@@ -377,7 +382,7 @@ class Driver: NSObject {
             if queue == NSOperationQueue.mainQueue() {
                 return self.coreDataStack.defaultManagedObjectContext
             } else if queue.isKindOfClass(DriverOperationQueue) {
-                return self.driverOperationQueue.context
+                return Static.driverOperationQueue?.currentExecutingOperation?.context
             }
         }
         
@@ -441,24 +446,6 @@ extension Driver: Printable {
 */
 class DriverOperationQueue: NSOperationQueue {
     
-    /// Managed Object Context associated to this Operation Queue
-    var context: NSManagedObjectContext
-    
-    /**
-    Initialize with parent Managed Object Context. It will be the parent of the context which will be associated to this Operation Queue.
-    
-    :param: parentContext The parent of the context which will be associated to this Operation Queue.
-    
-    :returns:
-    */
-    init(parentContext: NSManagedObjectContext?) {
-        let context = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
-        context.parentContext = parentContext
-        context.mergePolicy = NSOverwriteMergePolicy
-        self.context = context
-        super.init()
-    }
-    
     /**
     Add an Operaion to this Operaion Queue. Operations will run in serial.
     
@@ -471,11 +458,45 @@ class DriverOperationQueue: NSOperationQueue {
         }
         super.addOperation(op)
     }
+    
+    /// Current executing operation. nil if none is executing.
+    var currentExecutingOperation: DriverOperation? {
+        for operation in self.operations as [DriverOperation] {
+            if operation.executing {
+                return operation
+            }
+        }
+        return nil
+    }
 }
 
 /**
-*  Operation to use with DriverOperationQueue
+*  Operation to use with DriverOperation
 */
 class DriverOperation: NSBlockOperation {
+
+    /// Managed Object Context associated to this Operation
+    let context: NSManagedObjectContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
     
+    /**
+    Initialize with parent Managed Object Context. It will be the parent of the context which will be associated to this Operation.
+    
+    :param: parentContext The parent of the context which will be associated to this Operation.
+    
+    :returns:
+    */
+    convenience init(parentContext: NSManagedObjectContext, block: ((localContext: NSManagedObjectContext) -> Void)) {
+        
+        self.init()
+        
+        let context = self.context
+        context.parentContext = parentContext
+        context.mergePolicy = NSOverwriteMergePolicy
+        
+        self.addExecutionBlock({ [weak self] () -> Void in
+            
+            block(localContext: context)
+            return
+        })
+    }
 }
