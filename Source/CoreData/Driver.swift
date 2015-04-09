@@ -107,7 +107,7 @@ class Driver: NSObject {
                     request.fetchLimit = limit
                 }
             }
-            return context.executeFetchRequest(request, error: error) as [NSManagedObject]?
+            return context.executeFetchRequest(request, error: error) as! [NSManagedObject]?
         } else {
             return nil
         }
@@ -127,7 +127,7 @@ class Driver: NSObject {
         var results: [AnyObject]? = nil
 
         if let ctx = ctx {
-            return ctx.executeFetchRequest(fetchRequest, error: error) as [NSManagedObject]?
+            return ctx.executeFetchRequest(fetchRequest, error: error) as! [NSManagedObject]?
         }
         return nil
     }
@@ -262,11 +262,18 @@ class Driver: NSObject {
     :param: saveFailure
     :param: waitUntilFinished
     */
-    func saveWithBlock(#block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool = false) {
+    func saveWithBlock(#block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
         self.saveWithBlockWaitSave(block: { (save) -> Void in
             block?()
             save()
-        }, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: waitUntilFinished)
+            }, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: false)
+    }
+    
+    func saveWithBlock(#block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool) {
+        self.saveWithBlockWaitSave(block: { (save) -> Void in
+            block?()
+            save()
+            }, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: waitUntilFinished)
     }
     
     /**
@@ -296,14 +303,18 @@ class Driver: NSObject {
     :param: saveFailure
     :param: waitUntilFinished
     */
-    func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool = false) {
+    func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
+        self.saveWithBlockWaitSave(block: block, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: false)
+    }
+    
+    func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished: Bool) {
         if let block = block {
 
             if let context = self.coreDataStack.defaultManagedObjectContext {
                 let operation = DriverOperation(parentContext: context) { (localContext) -> Void in
                     block(save: { () -> Void in
                         var error: NSError? = nil
-                        if localContext.obtainPermanentIDsForObjects(localContext.insertedObjects.allObjects, error: &error) {
+                        if localContext.obtainPermanentIDsForObjects(Array(localContext.insertedObjects), error: &error) {
                             if error != nil {
                                 dispatch_sync(dispatch_get_main_queue(), { () -> Void in
                                     saveFailure?(error: error)
@@ -348,7 +359,11 @@ class Driver: NSObject {
     :param: block
     :param: waitUntilFinished
     */
-    func performBlock(#block: (() -> Void)?, completion: (() -> Void)?, waitUntilFinished: Bool = false) {
+    func performBlock(#block: (() -> Void)?, completion: (() -> Void)?) {
+        self.performBlock(block: block, completion: completion, waitUntilFinished: false)
+    }
+    
+    func performBlock(#block: (() -> Void)?, completion: (() -> Void)?, waitUntilFinished: Bool) {
         if let block = block {
             if let context = self.coreDataStack.defaultManagedObjectContext {
                 let operation = DriverOperation(parentContext: context) { (localContext) -> Void in
@@ -458,10 +473,9 @@ class DriverOperationQueue: NSOperationQueue {
         }
         super.addOperation(op)
     }
-    
     /// Current executing operation. nil if none is executing.
     var currentExecutingOperation: DriverOperation? {
-        for operation in self.operations as [DriverOperation] {
+        for operation in self.operations as! [DriverOperation] {
             if operation.executing {
                 return operation
             }
