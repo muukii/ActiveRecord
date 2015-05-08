@@ -170,9 +170,13 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func create(#entityName: String) -> NSManagedObject? {
-        return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context())
+    public class func create(#entityName: String) -> Self? {
+        func _create<T: NSManagedObject>(#entityName: String) -> T? {
+            return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context()) as? T
+        }
+        return _create(entityName: entityName)
     }
+    
     
     /**
     Create a temporary managed object which does not live inside a managed object context.
@@ -181,10 +185,15 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func createAsTemporary(#entityName: String) -> NSManagedObject? {
+    public class func createAsTemporary(#entityName: String) -> Self? {
+        
+        return _createAsTemporary(entityName: entityName)
+    }
+    
+    private class func _createAsTemporary<T: NSManagedObject>(#entityName: String) -> T? {
         if let context = NSManagedObjectContext.context() {
             if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
-                return self(entity: entityDescription, insertIntoManagedObjectContext: nil)
+                return self(entity: entityDescription, insertIntoManagedObjectContext: nil) as? T
             }
         }
         return nil
@@ -241,10 +250,15 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func findFirst(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> NSManagedObject? {
+    public class func findFirst(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> Self? {
+        
+        return _findFirst(entityName: entityName, predicate: predicate, sortDescriptors: sortDescriptors)
+    }
+    
+    private class func _findFirst<T: NSManagedObject>(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> T? {
         var error: NSError? = nil
         if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
-            return objects.first
+            return objects.first as? T
         }
         return nil
     }
