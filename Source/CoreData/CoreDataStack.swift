@@ -62,25 +62,30 @@ public class CoreDataStack: NSObject {
     :returns: true if migration is needed. false if not needed (includes case when persistent store is not found).
     */
     public func isRequiredMigration() -> Bool {
-        var error: NSError? = nil
-
         if let storeURL = self.storeURL {
             // find the persistent store.
-            if storeURL.checkResourceIsReachableAndReturnError(&error) == false {
-                arprint("Persistent store not found : \(error?.localizedDescription)")
+            
+            do {
+                try storeURL.checkResourceIsReachable()
+            } catch {
+                arprint("Persistent store not found : \((error as NSError).localizedDescription)")
                 return false
             }
 
             // check compatibility
-            let sourceMetaData = NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(NSSQLiteStoreType, URL: storeURL, error: &error)
-            if let managedObjectModel = self.managedObjectModel {
-                let isCompatible: Bool = managedObjectModel.isConfiguration(nil, compatibleWithStoreMetadata: sourceMetaData)
-                if isCompatible {
-                    self.migrationNotRequiredConfirmed = true
+            do {
+                let sourceMetaData = try NSPersistentStoreCoordinator.metadataForPersistentStoreOfType(NSSQLiteStoreType, URL: storeURL)
+                if let managedObjectModel = self.managedObjectModel {
+                    let isCompatible: Bool = managedObjectModel.isConfiguration(nil, compatibleWithStoreMetadata: sourceMetaData)
+                    if isCompatible {
+                        self.migrationNotRequiredConfirmed = true
+                    }
+                    return !isCompatible
+                } else {
+                    fatalError("Could not get managed object model")
                 }
-                return !isCompatible
-            } else {
-                fatalError("Could not get managed object model")
+            } catch {
+                arprint("Persistent store could not be read : \((error as NSError).localizedDescription)")
             }
         }
         return false
