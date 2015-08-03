@@ -226,7 +226,7 @@ class Driver: NSObject {
     
     :param: object managed object
     */
-    func delete(#object: NSManagedObject?) {
+    func delete(object object: NSManagedObject?) {
         if let object = object {
             if let context = object.managedObjectContext {
                 context.deleteObject(object)
@@ -244,7 +244,7 @@ class Driver: NSObject {
 
     :returns: true if success
     */
-    func delete(#entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext? = nil, error: NSErrorPointer) -> Bool {
+    func delete(entityName entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext? = nil, error: NSErrorPointer) -> Bool {
         if let objects = read(entityName, predicate: predicate, context: context, error: error) {
             for object: NSManagedObject in objects {
                 delete(object: object)
@@ -262,14 +262,14 @@ class Driver: NSObject {
     :param: saveFailure
     :param: waitUntilFinished
     */
-    func saveWithBlock(#block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
+    func saveWithBlock(block block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
         self.saveWithBlockWaitSave(block: { (save) -> Void in
             block?()
             save()
             }, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: false)
     }
     
-    func saveWithBlock(#block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool) {
+    func saveWithBlock(block block: (() -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished:Bool) {
         self.saveWithBlockWaitSave(block: { (save) -> Void in
             block?()
             save()
@@ -284,7 +284,7 @@ class Driver: NSObject {
     
     :returns: true if success
     */
-    func saveWithBlockAndWait(#block: (() -> Void)?, error: NSErrorPointer) -> Bool {
+    func saveWithBlockAndWait(block block: (() -> Void)?, error: NSErrorPointer) -> Bool {
         var result: Bool = true
         var _error = error
         self.saveWithBlock(block: block, saveSuccess: { () -> Void in
@@ -303,11 +303,11 @@ class Driver: NSObject {
     :param: saveFailure
     :param: waitUntilFinished
     */
-    func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
+    func saveWithBlockWaitSave(block block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?) {
         self.saveWithBlockWaitSave(block: block, saveSuccess: saveSuccess, saveFailure: saveFailure, waitUntilFinished: false)
     }
     
-    func saveWithBlockWaitSave(#block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished: Bool) {
+    func saveWithBlockWaitSave(block block: ((save: (() -> Void)) -> Void)?, saveSuccess: (() -> Void)?, saveFailure: ((error: NSError?) -> Void)?, waitUntilFinished: Bool) {
         if let block = block {
 
             if let context = self.coreDataStack.defaultManagedObjectContext {
@@ -359,11 +359,11 @@ class Driver: NSObject {
     :param: block
     :param: waitUntilFinished
     */
-    func performBlock(#block: (() -> Void)?, completion: (() -> Void)?) {
+    func performBlock(block block: (() -> Void)?, completion: (() -> Void)?) {
         self.performBlock(block: block, completion: completion, waitUntilFinished: false)
     }
     
-    func performBlock(#block: (() -> Void)?, completion: (() -> Void)?, waitUntilFinished: Bool) {
+    func performBlock(block block: (() -> Void)?, completion: (() -> Void)?, waitUntilFinished: Bool) {
         if let block = block {
             if let context = self.coreDataStack.defaultManagedObjectContext {
                 let operation = DriverOperation(parentContext: context) { (localContext) -> Void in

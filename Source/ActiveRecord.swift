@@ -52,7 +52,7 @@ public class ActiveRecord: NSObject {
         return false
     }
     
-    public class func setup(#coreDataStack: CoreDataStack) {
+    public class func setup(coreDataStack coreDataStack: CoreDataStack) {
         Static.driver = Driver(coreDataStack: coreDataStack)
     }
     
@@ -170,7 +170,7 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func create(#entityName: String) -> NSManagedObject? {
+    public class func create(entityName entityName: String) -> NSManagedObject? {
         return ActiveRecord.driver?.create(entityName, context: ActiveRecord.driver?.context())
     }
     
@@ -181,7 +181,7 @@ public extension NSManagedObject {
     
     :returns: Entity Description
     */
-    public class func createAsTemporary(#entityName: String) -> NSManagedObject? {
+    public class func createAsTemporary(entityName entityName: String) -> NSManagedObject? {
         if let context = NSManagedObjectContext.context() {
             if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
                 return self(entity: entityDescription, insertIntoManagedObjectContext: nil)
@@ -211,7 +211,7 @@ public extension NSManagedObject {
     :param: entityName
     :param: predicate
     */
-    public class func delete(#entityName: String, predicate: NSPredicate) {
+    public class func delete(entityName entityName: String, predicate: NSPredicate) {
         var error: NSError? = nil
         ActiveRecord.driver?.delete(entityName: entityName, predicate: predicate, context: ActiveRecord.driver?.context(), error: &error)
     }
@@ -227,7 +227,7 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func find(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [NSManagedObject]? {
+    public class func find(entityName entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [NSManagedObject]? {
         var error: NSError? = nil
         return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error)
     }
@@ -241,7 +241,7 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func findFirst(#entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> NSManagedObject? {
+    public class func findFirst(entityName entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> NSManagedObject? {
         var error: NSError? = nil
         if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
             return objects.first
@@ -256,7 +256,7 @@ public extension NSManagedObject {
     
     :returns: array of managed objects
     */
-    public class func find(#fetchRequest: NSFetchRequest) -> [NSManagedObject]? {
+    public class func find(fetchRequest fetchRequest: NSFetchRequest) -> [NSManagedObject]? {
         var error: NSError? = nil
         return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error)
     }
@@ -269,7 +269,7 @@ public extension NSManagedObject {
     
     :returns: number of managed objects
     */
-    public class func count(#entityName: String, predicate: NSPredicate? = nil) -> Int {
+    public class func count(entityName entityName: String, predicate: NSPredicate? = nil) -> Int {
         if let driver = ActiveRecord.driver {
             var error: NSError? = nil
             return driver.count(entityName, predicate: predicate, context: ActiveRecord.driver?.context(), error: &error)
