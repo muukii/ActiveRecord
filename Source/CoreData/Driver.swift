@@ -107,7 +107,13 @@ class Driver: NSObject {
                     request.fetchLimit = limit
                 }
             }
-            return context.executeFetchRequest(request, error: error) as! [NSManagedObject]?
+            
+            do {
+                return try context.executeFetchRequest(request) as? [NSManagedObject]
+            } catch let fetchError {
+                error = fetchError as NSError
+                return nil
+            }
         } else {
             return nil
         }
@@ -449,7 +455,7 @@ class Driver: NSObject {
 
 // MARK: - Printable
 
-extension Driver: Printable {
+extension Driver: CustomStringConvertible {
     override var description: String {
         let description = "Stored URL: \(self.coreDataStack.storeURL)"
         return description

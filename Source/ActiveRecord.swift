@@ -27,7 +27,7 @@ func arprint(  _ body: AnyObject! = "",
     function: String = __FUNCTION__,
     line: Int = __LINE__) {
 #if DEBUG
-    println("[\(function) : \(line)] \(body)")
+    print("[\(function) : \(line)] \(body)")
     #else
 #endif
 }
@@ -184,7 +184,7 @@ public extension NSManagedObject {
     public class func createAsTemporary(entityName entityName: String) -> NSManagedObject? {
         if let context = NSManagedObjectContext.context() {
             if let entityDescription = NSEntityDescription.entityForName(entityName, inManagedObjectContext: context) {
-                return self(entity: entityDescription, insertIntoManagedObjectContext: nil)
+                return self.init(entity: entityDescription, insertIntoManagedObjectContext: nil)
             }
         }
         return nil
