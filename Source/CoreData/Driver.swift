@@ -70,7 +70,7 @@ class Driver: NSObject {
     */
     func create(entityName: String, context: NSManagedObjectContext?) -> NSManagedObject? {
         if let context = context {
-            return NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context) as? NSManagedObject
+            return NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context)
         } else {
             return nil
         }
@@ -86,9 +86,9 @@ class Driver: NSObject {
     
     :returns: array of managed objects. nil if an error occurred.
     */
-    func read(entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0, context: NSManagedObjectContext?, error: NSErrorPointer) -> [NSManagedObject]? {
+    func read(entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0, context: NSManagedObjectContext?) throws ->  [NSManagedObject]? {
         if let context = context {
-            var results: [AnyObject]? = nil
+
             var request = NSFetchRequest(entityName: entityName)
             if let predicate = predicate {
                 request.predicate = predicate
@@ -110,9 +110,8 @@ class Driver: NSObject {
             
             do {
                 return try context.executeFetchRequest(request) as? [NSManagedObject]
-            } catch let fetchError {
-                error = fetchError as NSError
-                return nil
+            } catch {
+                throw error
             }
         } else {
             return nil
@@ -128,12 +127,14 @@ class Driver: NSObject {
     
     :returns: array of managed objects. nil if an error occurred.
     */
-    func read(fetchRequest: NSFetchRequest, context: NSManagedObjectContext? = nil, error: NSErrorPointer) -> [NSManagedObject]? {
-        let ctx = context != nil ? context : self.context()
-        var results: [AnyObject]? = nil
-
-        if let ctx = ctx {
-            return ctx.executeFetchRequest(fetchRequest, error: error) as! [NSManagedObject]?
+    func read(fetchRequest: NSFetchRequest, context: NSManagedObjectContext? = nil) throws -> [NSManagedObject]? {
+        
+        if let ctx = context ?? self.context() {
+            do {
+                return try ctx.executeFetchRequest(fetchRequest) as? [NSManagedObject]
+            } catch {
+                throw error
+            }
         }
         return nil
     }
@@ -149,7 +150,7 @@ class Driver: NSObject {
     */
     func count(entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext?, error: NSErrorPointer) -> Int {
         if let context = context {
-            var request = NSFetchRequest(entityName: entityName)
+            let request = NSFetchRequest(entityName: entityName)
             if predicate != nil {
                 request.predicate = predicate
             }
@@ -174,17 +175,16 @@ class Driver: NSObject {
     private func recursiveSave(context: NSManagedObjectContext?, error: NSErrorPointer) {
         if let parentContext = context?.parentContext {
             parentContext.performBlock({ () -> Void in
-                if parentContext.save(error) {
-                    if parentContext == self.coreDataStack.writerManagedObjectContext {
-                        arprint("Data stored")
-                    } else if parentContext == self.coreDataStack.defaultManagedObjectContext {
-                        arprint("MainQueueContext saved")
-                    } else {
-                        arprint("Recursive save \(parentContext)")
+                try! parentContext.save()
+                if parentContext == self.coreDataStack.writerManagedObjectContext {
+                    arprint("Data stored")
+                } else if parentContext == self.coreDataStack.defaultManagedObjectContext {
+                    arprint("MainQueueContext saved")
+                } else {
+                    arprint("Recursive save \(parentContext)")
                     }
                     
                     self.recursiveSave(parentContext, error: error)
-                }
             })
         }
     }
@@ -206,9 +206,8 @@ class Driver: NSObject {
         if let context = context {
             if context.hasChanges {
                 context.performBlockAndWait({ () -> Void in
-                    if context.save(error) {
-                        self.recursiveSave(context, error: error)
-                    }
+                    try! context.save()
+                    self.recursiveSave(context, error: error)
                 })
                 if error.memory != nil {
                     arprint("Save failed : \(error.memory?.localizedDescription)")
@@ -250,14 +249,17 @@ class Driver: NSObject {
 
     :returns: true if success
     */
-    func delete(entityName entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext? = nil, error: NSErrorPointer) -> Bool {
-        if let objects = read(entityName, predicate: predicate, context: context, error: error) {
-            for object: NSManagedObject in objects {
-                delete(object: object)
+    func delete(entityName entityName: String, predicate: NSPredicate? = nil, context: NSManagedObjectContext? = nil) throws {
+
+        do {
+            if let objects = try read(entityName, predicate: predicate, context: context) {
+                for object: NSManagedObject in objects {
+                    delete(object: object)
+                }
             }
-            return true
+        } catch {
+            throw error
         }
-        return false
     }
     
     /**
@@ -320,7 +322,8 @@ class Driver: NSObject {
                 let operation = DriverOperation(parentContext: context) { (localContext) -> Void in
                     block(save: { () -> Void in
                         var error: NSError? = nil
-                        if localContext.obtainPermanentIDsForObjects(Array(localContext.insertedObjects), error: &error) {
+                        do {
+                            try localContext.obtainPermanentIDsForObjects(Array(localContext.insertedObjects))
                             if error != nil {
                                 dispatch_sync(dispatch_get_main_queue(), { () -> Void in
                                     saveFailure?(error: error)
@@ -339,9 +342,10 @@ class Driver: NSObject {
                                     })
                                 }
                             }
-                        } else {
+                            
+                        } catch {
                             dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                                saveFailure?(error: error)
+                                saveFailure?(error: error as NSError)
                                 return
                             })
                         }
@@ -455,7 +459,7 @@ class Driver: NSObject {
 
 // MARK: - Printable
 
-extension Driver: CustomStringConvertible {
+extension Driver {
     override var description: String {
         let description = "Stored URL: \(self.coreDataStack.storeURL)"
         return description
@@ -474,7 +478,7 @@ class DriverOperationQueue: NSOperationQueue {
     */
     override func addOperation(op: NSOperation) {
         arprint("Add Operation")
-        if let lastOperation = self.operations.last as? NSOperation {
+        if let lastOperation = self.operations.last {
             op.addDependency(lastOperation)
         }
         super.addOperation(op)
@@ -513,10 +517,9 @@ class DriverOperation: NSBlockOperation {
         context.parentContext = parentContext
         context.mergePolicy = NSOverwriteMergePolicy
         
-        self.addExecutionBlock({ [weak self] () -> Void in
+        self.addExecutionBlock({ () -> Void in
             
             block(localContext: context)
-            return
         })
     }
 }

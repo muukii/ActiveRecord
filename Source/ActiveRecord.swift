@@ -23,7 +23,7 @@
 import Foundation
 import CoreData
 
-func arprint(  _ body: AnyObject! = "",
+func arprint(body: AnyObject! = "",
     function: String = __FUNCTION__,
     line: Int = __LINE__) {
 #if DEBUG
@@ -212,8 +212,7 @@ public extension NSManagedObject {
     :param: predicate
     */
     public class func delete(entityName entityName: String, predicate: NSPredicate) {
-        var error: NSError? = nil
-        ActiveRecord.driver?.delete(entityName: entityName, predicate: predicate, context: ActiveRecord.driver?.context(), error: &error)
+        try! ActiveRecord.driver?.delete(entityName: entityName, predicate: predicate, context: ActiveRecord.driver?.context())
     }
     
     /**
@@ -228,8 +227,7 @@ public extension NSManagedObject {
     :returns: array of managed objects
     */
     public class func find(entityName entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, offset: Int? = 0, limit: Int? = 0) -> [NSManagedObject]? {
-        var error: NSError? = nil
-        return ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context(), error: &error)
+        return try! ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: offset, limit: limit, context: ActiveRecord.driver?.context())
     }
     
     /**
@@ -242,8 +240,7 @@ public extension NSManagedObject {
     :returns: array of managed objects
     */
     public class func findFirst(entityName entityName: String, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> NSManagedObject? {
-        var error: NSError? = nil
-        if let objects = ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context(), error: &error) {
+        if let objects = try! ActiveRecord.driver?.read(entityName, predicate: predicate, sortDescriptors: sortDescriptors, offset: 0, limit: 1, context: ActiveRecord.driver?.context()) {
             return objects.first
         }
         return nil
@@ -257,8 +254,7 @@ public extension NSManagedObject {
     :returns: array of managed objects
     */
     public class func find(fetchRequest fetchRequest: NSFetchRequest) -> [NSManagedObject]? {
-        var error: NSError? = nil
-        return ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context(), error: &error)
+        return try! ActiveRecord.driver?.read(fetchRequest, context: ActiveRecord.driver?.context())
     }
     
     /**
@@ -284,11 +280,11 @@ public extension NSManagedObjectContext {
     /**
     Save the managed object context
     */
-    public func save() {
-        var error: NSError? = nil
-        ActiveRecord.driver?.save(self, error: &error)
-    }
-    
+//    public func save() {
+//        var error: NSError? = nil
+//        ActiveRecord.driver?.save(self, error: &error)
+//    }
+
     /**
     Save the managed object context
     */
@@ -297,19 +293,19 @@ public extension NSManagedObjectContext {
         ActiveRecord.driver?.save(ActiveRecord.driver?.context(), error: &error)
     }
 
-    /**
-    Save the managed object context with error pointer paramter
-    
-    :param: error error pointer parameter
-    
-    :returns: true for success
-    */
-    public class func save(error: NSErrorPointer) -> Bool {
-        if let driver =  ActiveRecord.driver {
-            return driver.save(ActiveRecord.driver?.context(), error: error)
-        }
-        return false
-    }
+//    /**
+//    Save the managed object context with error pointer paramter
+//    
+//    :param: error error pointer parameter
+//    
+//    :returns: true for success
+//    */
+//    public class func save(error: NSErrorPointer) -> Bool {
+//        if let driver =  ActiveRecord.driver {
+//            return driver.save(ActiveRecord.driver?.context(), error: error)
+//        }
+//        return false
+//    }
 
     /**
     Returns the managed object context which should be used (context associated to current Operation Queue or current Thread).
