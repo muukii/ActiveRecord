@@ -65,11 +65,13 @@ public class CoreDataStack: NSObject {
         if let storeURL = self.storeURL {
             // find the persistent store.
             
-            do {
-                try storeURL.checkResourceIsReachable()
-            } catch {
-                arprint("Persistent store not found : \((error as NSError).localizedDescription)")
-                return false
+            var error: NSError?
+
+            if storeURL.checkResourceIsReachableAndReturnError(nil) {
+                if error != nil {
+                    arprint("Persistent store not found : \((error)?.localizedDescription)")
+                    return false
+                }
             }
 
             // check compatibility
