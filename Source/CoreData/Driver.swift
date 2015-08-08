@@ -206,8 +206,13 @@ class Driver: NSObject {
         if let context = context {
             if context.hasChanges {
                 context.performBlockAndWait({ () -> Void in
-                    try! context.save()
-                    self.recursiveSave(context, error: error)
+                    do {
+                        try context.save()
+                        self.recursiveSave(context, error: error)
+                    }
+                    catch let saveError {
+                        error.memory = saveError as NSError
+                    }
                 })
                 if error.memory != nil {
                     arprint("Save failed : \(error.memory?.localizedDescription)")
